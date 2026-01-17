@@ -150,6 +150,20 @@ stable version instead of the latest development version.
 
 Alternatively, you can use **build.bat** that can build everything for you (run: `build.bat help` for more info).
 
+### One-stop Python build helper
+
+If you want a single command to drive the Windows build with sane defaults, you can use
+**docs/build_one_stop.py**. It wraps **build.bat** and assumes you already created
+**build.user.bat** as described above.
+
+Example (Release x64, All):
+
+```text
+python docs/build_one_stop.py --build-type Build --platform x64 --config All --build-cfg Release
+```
+
+You can add optional switches (for example, `--packages` or `--installer`) to match your needs.
+
 
 ## Part I: Building the installer
 
