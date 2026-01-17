@@ -250,6 +250,7 @@
 #define ID_VOLUME_BOOST_MIN             972
 #define ID_VOLUME_BOOST_MAX             973
 #define ID_NAVIGATE_TUNERSCAN           974
+#define ID_NAVIGATE_ADD_MKV_CHAPTER     981
 #define ID_FAVORITES_QUICKADDFAVORITE   975
 #define ID_FILE_REOPEN                  976
 #define ID_FILTERS                      977
