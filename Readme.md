@@ -1,78 +1,78 @@
 # Media Player Classic - Home Cinema
 
-Media Player Classic - Home Cinema (MPC-HC) is a free and open-source video and audio player for Windows. It is famous and loved for its simple and effective user interface, providing an excellent user experience. It offers a huge amount of functionality. Being a DirectShow player, it also allows flexibility and extensibility through third party filters.
+Media Player Classic - Home Cinema (MPC-HC) は、Windows 向けの無料かつオープンソースの動画・音声プレイヤーです。シンプルで効果的な UI が特徴で、優れたユーザー体験を提供します。機能は非常に多彩で、DirectShow プレイヤーとしてサードパーティ製フィルターによる柔軟な拡張も可能です。
 
-## Development Status
+## 開発状況
 
-The player is mature, stable, reliable, and already provides a huge amount of features.
+このプレイヤーは成熟しており、安定・堅牢で、すでに豊富な機能を備えています。
 
-I currently do not accept any new feature requests. But that does not mean that the player is not getting any new features or other improvements. In fact, a huge amount of improvements have been made since I have taken over development in 2017.
+現在は新機能リクエストを受け付けていません。ただし、それは新機能や改善が行われていないという意味ではありません。実際、2017 年に私が開発を引き継いで以来、多くの改善が行われています。
 
-There are three primary reasons why I currently do not accept any new feature requests:<br/>
-1) I and my fellow developers are too busy working on our own ideas and wishes for MPC-HC, and do not have any time or desire to work on other stuff.<br/>
-2) 90% of all requests are for functionality that is already available in the player, sometimes for over a decade, but users are too lazy/stupid to have a look at the options and player menus, or do a simple Internet search for help.<br/>
-3) For certain extra functionality there are already good solutions available. Such as an [equalizer](https://sourceforge.net/projects/equalizerapo/).
+新機能リクエストを受け付けていない主な理由は次の 3 つです。<br/>
+1) 私や他の開発者は MPC-HC の自分たちのアイデアや要望の実現で手一杯であり、他の作業に割く時間や意欲がありません。<br/>
+2) リクエストの 90% は、プレイヤーに既に長年備わっている機能に関するものです。多くの利用者がオプションやメニューを確認せず、簡単な検索もしないことが理由です。<br/>
+3) 追加機能に関しては、すでに良い代替手段が存在します。例として [イコライザー](https://sourceforge.net/projects/equalizerapo/) があります。
 
-The internal codecs are developed in an external project ([LAV Filters](https://github.com/Nevcairiel/LAVFilters)). That project is actively maintained, and MPC-HC will be updated periodically with the latest codecs. Same applies to code/files from other external projects that are used by MPC-HC, such as MediaInfo.
+内部コーデックは外部プロジェクトである [LAV Filters](https://github.com/Nevcairiel/LAVFilters) で開発されています。このプロジェクトは継続的にメンテナンスされており、MPC-HC は最新のコーデックで定期的に更新されます。MediaInfo など、MPC-HC が利用している他の外部プロジェクトのコード/ファイルにも同様のことが当てはまります。
 
-If you are a programmer and want to help improve MPC-HC, then you can do so by submitting a pull request containing your patches.
+プログラマーの方で MPC-HC の改善に協力したい場合は、パッチを含むプルリクエストを送ってください。
 
-## Overview of features
+## 機能概要
 
-A lot of people seem to be unaware of some of the awesome features that have been added to MPC-HC in the past years. Here is a list of useful options and features that everyone should know about:
-* Modern GUI Theme (Dark or Light)<br/>
-Options > Player > User Interface<br/>
-When using modern theme it is also possible to change the height of the seekbar and size of the toolbar buttons.<br/>
-* Video preview on the seekbar<br/>
-Options > Player > User Interface
-* Play HDR video<br/>
-This requires using MPC Video Renderer (included) or [madVR](http://forum.doom9.org/showthread.php?t=146228).<br/>
-After installation these renderers can be selected here:<br/>
-Options > Playback > Output<br/>
-Tip: If you want an easy to use all-in-one package that contains MPC-HC and these renderers, then use [K-Lite Codec pack](http://codecguide.com/download_kl.htm).
-* Added support for playback of many new audio and video formats:<br/>
-For example HEVC (H.265) / VVC (H.266) / AV1 video, and AC4 audio.<br/>
-* Improved subtitle rendering performance, and ability to use libass. Plus support for WebVTT.
-* Ability to search for subtitles<br/>
-Press D for manual search.<br/>
-Or enable automatic search in: Options > Subtitles > Misc<br/>
-* Adjust playback speed<br/>
-Menu > Play > Playback rate<br/>
-The buttons in the player that control playback rate take a 2x step by default. This can be customized to smaller values (like 10%):<br/>
-Options > Playback > Speed step<br/>
-Adjusting playback speed works best in combination with the SaneAR or MPC Audio Renderer. These two renderers have automatic pitch correction.<br/>
-Options > Playback > Output > Audio Renderer
-* MPC-HC can remember playback position, so you can resume from that point later<br/>
-Options > Player > History
-* You can quickly seek through a video with Ctrl + Mouse Scrollwheel.
-* You can jump to next/previous file in a folder by pressing PageUp/PageDown.
-* You can perform automatic actions at end of file. For example to go to next file or close player.<br/>
-Options > Playback > After Playback (permanent setting)<br/>
-Menu > Play > After Playback (for current file only)
-* A-B repeat<br/>
-You can loop a segment of a video. Press \[ and \] to set start and stop markers.
-* You can rotate/flip/mirror/stretch/zoom the video<br/>
-Menu > View > Pan&Scan<br/>
-This is also easily done with hotkeys (see below).
-* There are lots of keyboard hotkeys and mouse actions to control the player. They can be customized as well.<br/>
-Options > Player > Keys<br/>
-Tip: there is a search box above the table.
-* You can stream videos directly from Youtube and many other video websites<br/>
-Put [yt-dlp.exe](https://github.com/yt-dlp/yt-dlp/releases) in the MPC-HC installation folder.<br/>
-Then you can open website URLs in the player: Menu > File > Open File/URL<br/>
-You can even download those videos: Menu > File > Save a copy<br/>
-Tip: to be able to download in best quality with yt-dlp, it is recommended to also put [ffmpeg.exe](https://www.gyan.dev/ffmpeg/builds/) in the MPC-HC folder.<br/>
-Several YDL configuration options are found here: Options > Advanced<br/>
-This includes an option to specify the location of the .exe in case you don't want to put it in MPC-HC folder.<br/>
-Note 1: You also need to install [Microsoft Visual C++ 2010 SP1 Redistributable Package (x86)](https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe)<br/>
-Note 2: [yt-dlp nightly build](https://github.com/yt-dlp/yt-dlp-nightly-builds/) (very latest version made daily)
-Note 3: [yt-dlp fork with Win7 support](https://github.com/nicolaasjan/yt-dlp/releases)
-* Besides all these (new) features, there have also been many bugfixes and internal improvements in the player in the past years that give better performance and stability.
+ここ数年で MPC-HC に追加された優れた機能を知らない方が多いようです。以下は、誰もが知っておくべき便利なオプションと機能の一覧です:
+* モダン GUI テーマ (ダーク/ライト)<br/>
+オプション > プレイヤー > ユーザー インターフェイス<br/>
+モダンテーマ使用時は、シークバーの高さとツールバーボタンのサイズも変更できます。<br/>
+* シークバー上の動画プレビュー<br/>
+オプション > プレイヤー > ユーザー インターフェイス
+* HDR 動画の再生<br/>
+MPC Video Renderer (同梱) または [madVR](http://forum.doom9.org/showthread.php?t=146228) が必要です。<br/>
+インストール後、以下でレンダラーを選択できます:<br/>
+オプション > 再生 > 出力<br/>
+ヒント: MPC-HC とこれらのレンダラーがまとまったオールインワンを使いたい場合は、[K-Lite Codec pack](http://codecguide.com/download_kl.htm) を利用してください。
+* 多数の新しい音声/映像フォーマットの再生に対応:<br/>
+例: HEVC (H.265) / VVC (H.266) / AV1 の動画、AC4 音声 など。<br/>
+* 字幕レンダリング性能の向上と、libass の利用。さらに WebVTT にも対応。
+* 字幕検索機能<br/>
+手動検索は D キーを押してください。<br/>
+自動検索は次で有効化できます: オプション > 字幕 > その他<br/>
+* 再生速度の調整<br/>
+メニュー > 再生 > 再生速度<br/>
+プレイヤーの再生速度ボタンはデフォルトで 2 倍刻みですが、より小さな値 (例: 10%) に変更できます:<br/>
+オプション > 再生 > 速度ステップ<br/>
+再生速度の調整は、SaneAR もしくは MPC Audio Renderer と組み合わせると最も効果的です。これらのレンダラーは自動ピッチ補正に対応しています。<br/>
+オプション > 再生 > 出力 > オーディオ レンダラー
+* 再生位置を記憶して、後でその位置から再開可能<br/>
+オプション > プレイヤー > 履歴
+* Ctrl + マウスホイールで高速シーク
+* PageUp/PageDown でフォルダー内の前/次のファイルへ移動
+* 再生終了時の自動アクション (次のファイルに移動やプレイヤー終了など) を設定可能<br/>
+オプション > 再生 > 再生終了後 (恒久設定)<br/>
+メニュー > 再生 > 再生終了後 (現在のファイルのみ)
+* A-B リピート<br/>
+動画の区間ループができます。\[ と \] で開始/終了マーカーを設定します。
+* 動画の回転/反転/ミラー/ストレッチ/ズーム<br/>
+メニュー > 表示 > パン&スキャン<br/>
+ホットキーでも簡単に操作できます (下記参照)。
+* 多数のキーボードホットキーとマウス操作でプレイヤーを制御できます。カスタマイズも可能です。<br/>
+オプション > プレイヤー > キー<br/>
+ヒント: テーブル上部に検索ボックスがあります。
+* YouTube など多数の動画サイトから直接ストリーミング再生が可能<br/>
+[MPC-HC のインストールフォルダーに yt-dlp.exe](https://github.com/yt-dlp/yt-dlp/releases) を配置してください。<br/>
+その後、プレイヤーで URL を開けます: メニュー > ファイル > ファイル/URL を開く<br/>
+動画のダウンロードも可能です: メニュー > ファイル > コピーを保存<br/>
+ヒント: yt-dlp で最高品質をダウンロードするには、[ffmpeg.exe](https://www.gyan.dev/ffmpeg/builds/) も MPC-HC フォルダーに置くことを推奨します。<br/>
+YDL の設定は次の場所にあります: オプション > 詳細設定<br/>
+MPC-HC フォルダーに置かずに .exe の場所を指定するための設定も含まれています。<br/>
+注 1: [Microsoft Visual C++ 2010 SP1 再頒布可能パッケージ (x86)](https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe) のインストールも必要です。<br/>
+注 2: [yt-dlp nightly build](https://github.com/yt-dlp/yt-dlp-nightly-builds/) (毎日更新される最新ビルド)<br/>
+注 3: [Windows 7 対応の yt-dlp フォーク](https://github.com/nicolaasjan/yt-dlp/releases)
+* これらの新機能に加え、過去数年で多くのバグ修正と内部改善が行われ、性能と安定性が向上しています。
 
-## System Requirements
+## システム要件
 
 * Windows 7 / 8 / 8.1 / 10 / 11
 
-## License
+## ライセンス
 
-MPC-HC's code is licensed under [GPL v3](/COPYING.txt).
+MPC-HC のコードは [GPL v3](/COPYING.txt) でライセンスされています。

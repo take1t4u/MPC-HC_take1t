@@ -1806,6 +1806,7 @@ BEGIN
         MENUITEM "&Audio Menu",                 ID_NAVIGATE_AUDIOMENU
         MENUITEM "An&gle Menu",                 ID_NAVIGATE_ANGLEMENU
         MENUITEM "&Chapter Menu",               ID_NAVIGATE_CHAPTERMENU
+        MENUITEM "Add &MKV Chapter",            ID_NAVIGATE_ADD_MKV_CHAPTER
     END
     MENUITEM "F&avorites",                  ID_FAVORITES
     POPUP "&Help"
@@ -1957,6 +1958,7 @@ BEGIN
             MENUITEM "&Audio Menu",                 ID_NAVIGATE_AUDIOMENU
             MENUITEM "An&gle Menu",                 ID_NAVIGATE_ANGLEMENU
             MENUITEM "&Chapter Menu",               ID_NAVIGATE_CHAPTERMENU
+            MENUITEM "Add &MKV Chapter",            ID_NAVIGATE_ADD_MKV_CHAPTER
         END
         MENUITEM "F&avorites",                  ID_FAVORITES
         MENUITEM SEPARATOR
@@ -2325,6 +2327,7 @@ BEGIN
             MENUITEM "&Audio Menu",                 ID_NAVIGATE_AUDIOMENU
             MENUITEM "An&gle Menu",                 ID_NAVIGATE_ANGLEMENU
             MENUITEM "&Chapter Menu",               ID_NAVIGATE_CHAPTERMENU
+            MENUITEM "Add &MKV Chapter",            ID_NAVIGATE_ADD_MKV_CHAPTER
         END
         MENUITEM "F&avorites",                  ID_FAVORITES
         POPUP "&Help"
@@ -2969,6 +2972,7 @@ STRINGTABLE
 BEGIN
     ID_NAVIGATE_SKIPBACK    "Skip back\nSkip back"
     ID_NAVIGATE_SKIPFORWARD "Skip forward\nSkip forward"
+    ID_NAVIGATE_ADD_MKV_CHAPTER "Add MKV Chapter\nAdd MKV Chapter"
 END
 
 STRINGTABLE

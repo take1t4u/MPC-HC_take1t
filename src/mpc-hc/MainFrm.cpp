@@ -117,7 +117,120 @@
 #include  "Logger.h"
 
 #include <dwmapi.h>
+#include <cstdlib>
 #undef SubclassWindow
+
+namespace {
+CString EscapeMkvXml(const CString& value)
+{
+    CString escaped(value);
+    escaped.Replace(_T("&"), _T("&amp;"));
+    escaped.Replace(_T("<"), _T("&lt;"));
+    escaped.Replace(_T(">"), _T("&gt;"));
+    escaped.Replace(_T("\""), _T("&quot;"));
+    escaped.Replace(_T("'"), _T("&apos;"));
+    return escaped;
+}
+
+CString FormatMkvChapterTime(REFERENCE_TIME rt)
+{
+    if (rt < 0) {
+        rt = 0;
+    }
+    const LONGLONG kTicksPerSecond = 10000000;
+    const LONGLONG kTicksPerMinute = kTicksPerSecond * 60;
+    const LONGLONG kTicksPerHour = kTicksPerMinute * 60;
+    LONGLONG hours = rt / kTicksPerHour;
+    rt %= kTicksPerHour;
+    LONGLONG minutes = rt / kTicksPerMinute;
+    rt %= kTicksPerMinute;
+    LONGLONG seconds = rt / kTicksPerSecond;
+    LONGLONG remainder = rt % kTicksPerSecond;
+    LONGLONG nanoseconds = remainder * 100;
+    CString time;
+    time.Format(_T("%02lld:%02lld:%02lld.%09lld"), hours, minutes, seconds, nanoseconds);
+    return time;
+}
+
+CString GetMkvPropEditPath()
+{
+    CString appdir = PathUtils::GetProgramPath(false);
+    CString candidate = PathUtils::CombinePaths(appdir, _T("mkvtoolnix\\mkvpropedit.exe"));
+    if (CPath(candidate).FileExists()) {
+        return candidate;
+    }
+    candidate = PathUtils::CombinePaths(appdir, _T("mkvpropedit.exe"));
+    if (CPath(candidate).FileExists()) {
+        return candidate;
+    }
+    WCHAR buffer[MAX_PATH] = { 0 };
+    if (SearchPath(nullptr, L"mkvpropedit.exe", nullptr, MAX_PATH, buffer, nullptr)) {
+        return CString(buffer);
+    }
+    return CString();
+}
+
+bool WriteMkvChaptersXml(const CString& path, const CDSMChapterBag* chapterBag, CString* errorMessage)
+{
+    if (!chapterBag || chapterBag->ChapGetCount() == 0) {
+        if (errorMessage) {
+            *errorMessage = _T("No chapters available to write.");
+        }
+        return false;
+    }
+
+    CStringW xml;
+    xml.Append(L"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    xml.Append(L"<Chapters>\n");
+    xml.Append(L"  <EditionEntry>\n");
+
+    const DWORD chapterCount = chapterBag->ChapGetCount();
+    for (DWORD i = 0; i < chapterCount; ++i) {
+        REFERENCE_TIME rt = 0;
+        CComBSTR name;
+        if (FAILED(chapterBag->ChapGet(i, &rt, &name))) {
+            continue;
+        }
+        CString chapterName = name.Length() ? CString(name.m_str) : CString();
+        if (chapterName.IsEmpty()) {
+            chapterName.Format(_T("Chapter %u"), i + 1);
+        }
+        const CString time = FormatMkvChapterTime(rt);
+        const CString escapedName = EscapeMkvXml(chapterName);
+
+        xml.Append(L"    <ChapterAtom>\n");
+        xml.AppendFormat(L"      <ChapterTimeStart>%s</ChapterTimeStart>\n", time.GetString());
+        xml.Append(L"      <ChapterDisplay>\n");
+        xml.AppendFormat(L"        <ChapterString>%s</ChapterString>\n", escapedName.GetString());
+        xml.Append(L"        <ChapterLanguage>und</ChapterLanguage>\n");
+        xml.Append(L"      </ChapterDisplay>\n");
+        xml.Append(L"    </ChapterAtom>\n");
+    }
+
+    xml.Append(L"  </EditionEntry>\n");
+    xml.Append(L"</Chapters>\n");
+
+    const int bufferSize = WideCharToMultiByte(CP_UTF8, 0, xml.GetString(), xml.GetLength(), nullptr, 0, nullptr, nullptr);
+    if (bufferSize <= 0) {
+        if (errorMessage) {
+            *errorMessage = _T("Failed to convert chapter XML to UTF-8.");
+        }
+        return false;
+    }
+    std::vector<char> buffer(static_cast<size_t>(bufferSize));
+    WideCharToMultiByte(CP_UTF8, 0, xml.GetString(), xml.GetLength(), buffer.data(), bufferSize, nullptr, nullptr);
+
+    CFile file;
+    if (!file.Open(path, CFile::modeCreate | CFile::modeWrite | CFile::typeBinary)) {
+        if (errorMessage) {
+            *errorMessage = _T("Failed to write chapter XML file.");
+        }
+        return false;
+    }
+    file.Write(buffer.data(), static_cast<UINT>(buffer.size()));
+    return true;
+}
+} // namespace
 
 // IID_IAMLine21Decoder
 DECLARE_INTERFACE_IID_(IAMLine21Decoder_2, IAMLine21Decoder, "6E8D4A21-310C-11d0-B79A-00AA003767A7") {};
@@ -593,6 +706,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_COMMAND_RANGE(ID_NAVIGATE_JUMPTO_SUBITEM_START, ID_NAVIGATE_JUMPTO_SUBITEM_END, OnNavigateJumpTo)
     ON_COMMAND_RANGE(ID_NAVIGATE_MENU_LEFT, ID_NAVIGATE_MENU_LEAVE, OnNavigateMenuItem)
     ON_UPDATE_COMMAND_UI_RANGE(ID_NAVIGATE_MENU_LEFT, ID_NAVIGATE_MENU_LEAVE, OnUpdateNavigateMenuItem)
+    ON_COMMAND(ID_NAVIGATE_ADD_MKV_CHAPTER, OnNavigateAddMkvChapter)
+    ON_UPDATE_COMMAND_UI(ID_NAVIGATE_ADD_MKV_CHAPTER, OnUpdateNavigateAddMkvChapter)
 
     ON_COMMAND(ID_NAVIGATE_TUNERSCAN, OnTunerScan)
     ON_UPDATE_COMMAND_UI(ID_NAVIGATE_TUNERSCAN, OnUpdateTunerScan)
@@ -11004,6 +11119,105 @@ void CMainFrame::OnNavigateMenuItem(UINT nID)
 void CMainFrame::OnUpdateNavigateMenuItem(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable((GetLoadState() == MLS::LOADED) && ((GetPlaybackMode() == PM_DVD) || (GetPlaybackMode() == PM_FILE)));
+}
+
+void CMainFrame::OnNavigateAddMkvChapter()
+{
+    if (GetLoadState() != MLS::LOADED || GetPlaybackMode() != PM_FILE) {
+        return;
+    }
+
+    CString filePath = m_wndPlaylistBar.GetCurFileName(true);
+    if (filePath.IsEmpty()) {
+        return;
+    }
+
+    CString ext = CPath(filePath).GetExtension();
+    ext.MakeLower();
+    if (ext != _T(".mkv")) {
+        AfxMessageBox(_T("Current file is not a Matroska (MKV) file."), MB_ICONWARNING, 0);
+        return;
+    }
+
+    if (!m_pCB) {
+        SetupChapters();
+    }
+
+    const REFERENCE_TIME currentPos = GetPos();
+    if (m_pCB) {
+        const DWORD chapterCount = m_pCB->ChapGetCount();
+        for (DWORD i = 0; i < chapterCount; ++i) {
+            REFERENCE_TIME rt = 0;
+            if (SUCCEEDED(m_pCB->ChapGet(i, &rt, nullptr))) {
+                if (std::llabs(rt - currentPos) < 10000000) {
+                    AfxMessageBox(_T("A chapter already exists near the current position."), MB_ICONWARNING, 0);
+                    return;
+                }
+            }
+        }
+    }
+
+    const DWORD newIndex = m_pCB ? m_pCB->ChapGetCount() + 1 : 1;
+    CString chapterName;
+    chapterName.Format(_T("Chapter %u"), newIndex);
+
+    if (m_pCB) {
+        m_pCB->ChapAppend(currentPos, chapterName);
+        m_pCB->ChapSort();
+    }
+    UpdateSeekbarChapterBag();
+    UpdateChapterInInfoBar();
+
+    WCHAR tempPath[MAX_PATH] = { 0 };
+    WCHAR tempFile[MAX_PATH] = { 0 };
+    if (!GetTempPathW(MAX_PATH, tempPath) || !GetTempFileNameW(tempPath, L"mpc", 0, tempFile)) {
+        AfxMessageBox(_T("Failed to create a temporary chapter file."), MB_ICONERROR, 0);
+        return;
+    }
+
+    CString errorMessage;
+    if (!WriteMkvChaptersXml(tempFile, m_pCB, &errorMessage)) {
+        AfxMessageBox(errorMessage, MB_ICONERROR, 0);
+        DeleteFileW(tempFile);
+        return;
+    }
+
+    CString mkvPropEditPath = GetMkvPropEditPath();
+    if (mkvPropEditPath.IsEmpty()) {
+        AfxMessageBox(_T("mkvpropedit.exe was not found in PATH or the mkvtoolnix folder."), MB_ICONERROR, 0);
+        DeleteFileW(tempFile);
+        return;
+    }
+
+    CString cmdLine;
+    cmdLine.Format(_T("cmd.exe /c \"\\\"%s\\\" --chapters \\\"%s\\\" \\\"%s\\\" && del /q \\\"%s\\\"\""),
+                   mkvPropEditPath.GetString(), tempFile, filePath.GetString(), tempFile);
+
+    PROCESS_INFORMATION procInfo = {};
+    STARTUPINFO startupInfo = {};
+    startupInfo.cb = sizeof(STARTUPINFO);
+    startupInfo.dwFlags = STARTF_USESHOWWINDOW;
+    startupInfo.wShowWindow = SW_HIDE;
+
+    if (!CreateProcess(nullptr, cmdLine.GetBuffer(), nullptr, nullptr, false, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &procInfo)) {
+        AfxMessageBox(_T("Failed to launch mkvpropedit.exe."), MB_ICONERROR, 0);
+        DeleteFileW(tempFile);
+        return;
+    }
+
+    CloseHandle(procInfo.hProcess);
+    CloseHandle(procInfo.hThread);
+}
+
+void CMainFrame::OnUpdateNavigateAddMkvChapter(CCmdUI* pCmdUI)
+{
+    if (GetLoadState() != MLS::LOADED || GetPlaybackMode() != PM_FILE) {
+        pCmdUI->Enable(false);
+        return;
+    }
+    CString ext = CPath(m_wndPlaylistBar.GetCurFileName()).GetExtension();
+    ext.MakeLower();
+    pCmdUI->Enable(ext == _T(".mkv"));
 }
 
 void CMainFrame::OnTunerScan()

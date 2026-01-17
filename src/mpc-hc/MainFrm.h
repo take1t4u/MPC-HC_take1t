@@ -1184,6 +1184,8 @@ public:
     afx_msg void OnNavigateJumpTo(UINT nID);
     afx_msg void OnNavigateMenuItem(UINT nID);
     afx_msg void OnUpdateNavigateMenuItem(CCmdUI* pCmdUI);
+    afx_msg void OnNavigateAddMkvChapter();
+    afx_msg void OnUpdateNavigateAddMkvChapter(CCmdUI* pCmdUI);
     afx_msg void OnTunerScan();
     afx_msg void OnUpdateTunerScan(CCmdUI* pCmdUI);
 
