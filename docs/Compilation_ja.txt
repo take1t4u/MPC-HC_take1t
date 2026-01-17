@@ -1,0 +1,173 @@
+# コンパイル手順
+
+## Part A: Visual Studio 環境の準備
+
+### Visual Studio 2019
+
+1. Visual Studio（任意のエディションで可）をインストールします。最低限、以下のコンポーネントを選択してください:
+    - C++ コア機能
+    - IntelliCode
+    - Windows Universal C Runtime
+    - Windows Universal CRT SDK
+    - C++ build tools（x86 & x64）
+    - C++ ATL
+    - C++ MFC
+    - Windows 10 SDK（10.0.17763.0 もしくは別バージョン）
+2. Windows 8.1 SDK をインストールします → <https://go.microsoft.com/fwlink/p/?LinkId=323507>
+    - インストールする機能を選ぶ際は「Windows Software Development Kit」だけで構いません。
+    - 代わりに Windows 10 SDK を使うこともできますが、その場合は生成されるバイナリが Windows 7 SP1 以上を要求するため、Windows 7 RTM との互換性が失われます。
+
+
+## Part B: Python 3 のインストール（任意）
+
+翻訳 DLL のビルドに必要です。
+
+1. <https://www.python.org/downloads/release/python-387/> から Python 3.8.7 をインストールします（Python 3.6 以降でも可）。
+2. 必要なライブラリをインストールするため、次のコマンドを実行します:
+    `C:\Program Files\Python38\Scripts\pip install --upgrade polib`
+
+
+## Part C: MSYS と GCC 環境の準備（任意）
+
+MPC-HC の内部コーデックとして使われる LAV Filters をビルドするために必要です。
+
+MPC-HC のプロジェクトファイルで「Release Lite」/「Debug Lite」ビルド構成を選ぶことで、LAV Filters のコンパイルを省略できます。
+これは開発時のクイックビルドに便利です。生成されるバイナリには内部フィルタ機能が含まれません。
+そのため、実際のリリースではこの構成を使わないでください。
+
+1. <http://www.msys2.org/> から MSYS2 をダウンロードします。
+   64 ビット OS を使用している場合（推奨）は 64 ビット版を入手してください。
+2. 例として **`C:\MSYS64\`** にインストールします。インストールパスは、後で作成する **build.user.bat** の設定スクリプトに指定します。
+3. `msys2_shell.bat` を実行します。
+4. 追加で必要なツールを次のコマンドでインストールします:
+   ```text
+   pacman -S make pkg-config diffutils
+   ```
+5. 次に、すべてのパッケージを以下のコマンドで更新します:
+   ```text
+   pacman -Syu
+   ```
+   MSYS の再起動を求められたら「Yes」を選びます。再起動後にもう一度同じコマンドを実行します。更新が完了したら MSYS を閉じます。
+6. 最新の mingw-w64-gcc パッケージを <http://files.1f0.de/mingw/> からダウンロードし、**`C:\MSYS64\mingw64`** に展開します（既存ファイルは上書き）。
+7. **`C:\MSYS64\mingw64\bin`** と **`C:\MSYS64\usr\bin`** を %PATH% 環境変数に追加することを推奨します。
+   これにより Windows のコマンドラインから GCC やその他の MSYS ツールを実行できます。  
+   Windows のコントロールパネル > システム > システムの詳細設定 > 環境変数。  
+   Windows 10 では、スタートメニューで `control.exe` と入力すると旧式のコントロールパネルにアクセスできます。
+
+## Part D: Yasm
+
+1. Microsoft Visual C++ 2010 再頒布可能パッケージを <https://www.microsoft.com/en-us/download/details.aspx?id=26999> からダウンロードしてインストールします。
+2. YASM を <http://www.tortall.net/projects/yasm/releases/yasm-1.3.0-win64.exe> からダウンロードします。
+3. **yasm.exe** にリネームして、%PATH% に含まれるフォルダーへ配置します。例: **`C:\Windows`** または **`C:\MSYS64\usr\bin`**（Part C 参照）。
+
+## Part E: NASM
+
+1. NASM を <https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip> からダウンロードします。
+2. nasm.exe を %PATH% に含まれるフォルダーへ配置します。例: **`C:\Windows`**。
+
+## Part F: パス設定ファイル
+
+MPC-HC のソースコードフォルダー（Part F 参照）に **build.user.bat** という名前のファイルを作成します。内容は次のとおりです（パスは環境に合わせて変更してください）。
+
+```bat
+@ECHO OFF
+REM [LAVFilters 用に必須] MSYS2/MinGW のパス:
+SET "MPCHC_MSYS=C:\MSYS64"
+SET "MPCHC_MINGW32=C:\MSYS64\mingw64"
+SET "MPCHC_MINGW64=C:\MSYS64\mingw64"
+SET "MSYSTEM=MINGW32"
+SET "MSYS2_PATH_TYPE=inherit"
+REM [任意] %PATH% に GIT がない場合は GIT の場所を指定
+SET "MPCHC_GIT=C:\Program Files\Git"
+REM [任意] 翻訳を変更する予定がある場合は Python 3.8 をインストールし、そのパスを指定
+SET "MPCHC_PYTHON=C:\Program Files\Python38"
+REM [任意] 使用する Windows SDK バージョンをカスタマイズしたい場合は指定
+SET "MPCHC_WINSDK_VER=8.1"
+```
+
+注意:
+
+* Visual Studio のインストールパスは自動検出を試みます。失敗した場合は手動で指定してください。例:
+  ```
+  SET "MPCHC_VS_PATH=%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\"
+  ```
+* MSYS を別のディレクトリにインストールした場合は、**build.user.bat** のパス設定が正しいか確認してください。
+* Git がインストールされていないとビルド版の情報が正確でなくなり、リビジョン番号が 0 に固定されます。
+
+
+## Part G: MPC-HC ソースのダウンロード
+
+ソースコードのダウンロードには Git が必要です。
+
+<https://git-for-windows.github.io/> から **Git for Windows** を、<http://gitextensions.github.io/> から **Git Extensions** をインストールしてください。
+`Use Git from the Windows command prompt` を選択します。必須ではないため、`Use Git from Git Bash only` を選ぶ場合は **build.user.bat** に `MPCHC_GIT` 変数を設定してください。
+
+Git を使って MPC-HC のリポジトリを **C:\mpc-hc**（または任意の場所）にクローンします。
+
+1. Git をインストールします。
+2. 次のコマンドを実行します:
+
+    ```text
+    git clone --recursive https://github.com/clsid2/mpc-hc.git
+    ```
+
+    または
+
+    ```text
+    git clone https://github.com/clsid2/mpc-hc.git
+    git submodule update --init --recursive
+    ```
+
+    サブモジュールの更新に失敗した場合は、次を試します:
+
+    ```text
+    git submodule foreach --recursive git fetch --tags
+    ```
+
+    その後、再度更新します:
+
+    ```text
+    git submodule update --init --recursive
+    ```
+
+最新の安定版ではなく開発版を取得したい場合は、`git clone` に `-b master` を追加できます。
+
+## Part H: MPC-HC ソースのコンパイル
+
+1. **C:\mpc-hc\mpc-hc.sln** を開きます。
+   ツールバーでソリューション構成を **Release** に変更します。
+2. **F7** を押してソリューションをビルドします。
+3. **C:\mpc-hc\bin\mpc-hc_x86** に **mpc-hc.exe** が生成されます。
+4. **C:\mpc-hc\mpciconlib.sln** を開きます。
+5. **F7** を押してソリューションをビルドします。
+6. **C:\mpc-hc\bin\mpc-hc_x86** に **mpciconlib.dll** が生成されます。
+7. **C:\mpc-hc\mpcresources.sln** を開きます。
+8. **BuildAll** プロジェクトをビルドします。
+9. **C:\mpc-hc\bin\mpc-hc_x86\Lang** に **mpcresources.XX.dll** が生成されます。
+
+代わりに **build.bat** を使ってすべてをビルドすることもできます（詳細は `build.bat help` を実行）。
+
+### ワンストップ Python ビルドヘルパー
+
+Windows ビルドを妥当な既定値でまとめて実行したい場合は、**docs/build_one_stop.py** を使えます。
+これは **build.bat** をラップし、上記で説明した **build.user.bat** の作成済みであることを前提とします。
+
+例（Release x64, All）:
+
+```text
+python docs/build_one_stop.py --build-type Build --platform x64 --config All --build-cfg Release
+```
+
+`--packages` や `--installer` などのオプションスイッチを追加して、必要に合わせて調整できます。
+
+
+## Part I: インストーラーのビルド
+
+Inno Setup Unicode v5.5.9 以降を <http://www.jrsoftware.org/isdl.php> からダウンロードします。
+すべてインストールしてから **C:\mpc-hc\distrib** に移動し、**mpc-hc_setup.iss** を Inno Setup で開き、
+スクリプト冒頭のコメントを読んでからコンパイルします。
+
+### NOTES
+
+* **build.bat** は **installer** または **packages** スイッチでインストーラーをビルドできます。
+* iss ファイルを編集する場合は Inno Setup の組み込み IDE を使用し、エンコーディングを変更しないでください（壊れやすいため）。
