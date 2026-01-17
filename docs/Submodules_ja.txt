@@ -1,0 +1,30 @@
+# サブモジュールの更新
+
+## 前提条件
+
+LAV Filters と FFmpeg のサブモジュールに新しいリモートを追加します:
+
+* LAV Filters: **src/thirdparty/LAVFilters/src** で `git remote add upstream https://github.com/Nevcairiel/LAVFilters.git`
+* FFmpeg: **src/thirdparty/LAVFilters/src/ffmpeg** で `git remote add upstream git://git.1f0.de/ffmpeg.git`
+
+**警告:** LAV Filters を更新する前に、必ず MPC-HC 側で更新が不要か確認してください。
+LAV Filters のインターフェースや設定に変更がある場合、MPC-HC 側の変更が必要になる可能性があります。
+更新によって旧バージョンの LAV Filters との互換性が壊れる場合は、**FGFilterLAV.cpp** のバージョンチェックを忘れずに更新してください。
+
+## LAV Filters の更新手順
+
+1. FFmpeg サブモジュール（**src/thirdparty/LAVFilters/src/ffmpeg**）で master ブランチをチェックアウトします。
+2. `git remote update` を実行してリモートを更新します。
+3. `git reset origin/master --hard` を実行してローカルリポジトリをクリーンアップします（ローカルのコミットはすべて失われるため注意）。
+4. `git rebase upstream/master` を実行して FFmpeg を更新します。
+5. 必要に応じて新しいカスタムパッチを適用します。
+6. `git tag mpc-hc-X.Y.Z-N` を実行します。X.Y.Z は最新の MPC-HC バージョン、N はそのリリース以降の LAV Filters 更新回数です。
+7. `git push --force --tags origin master` を実行して FFmpeg リポジトリを更新します。
+8. LAV Filters サブモジュール（src/thirdparty/LAVFilters/src）で master ブランチをチェックアウトします。
+9. `git remote update` を実行してリモートを更新します。
+10. `git reset origin/master --hard` を実行してローカルリポジトリをクリーンアップします（ローカルのコミットはすべて失われるため注意）。
+11. `git rebase upstream/master` を実行して LAV Filters を更新します。
+12. 必要に応じて新しいカスタムパッチを適用します。
+13. `git tag mpc-hc-X.Y.Z-N` を実行します。X.Y.Z は最新の MPC-HC バージョン、N はそのリリース以降の LAV Filters 更新回数です。
+14. `git push --force --tags origin master` を実行して LAV Filters リポジトリを更新します。
+15. MPC-HC リポジトリでサブモジュール更新をコミットします。
